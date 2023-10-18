@@ -14,9 +14,10 @@ export async function GET() {
         _max: {subTotal: true, itemDiscount: true, tax: true, total: true, discount: true, grandTotal: true},
     });
     return NextResponse.json({ data: result });
-
-    const orders = await prisma.order.findMany({
-      groupBy: { id: "desc" },
+    
+    const orders = await prisma.order.groupBy({
+        by: ['userId'],
+        _sum: {subTotal: true, itemDiscount: true, tax: true, total: true, discount: true, grandTotal: true},
     });
     return NextResponse.json({ data: orders });
 

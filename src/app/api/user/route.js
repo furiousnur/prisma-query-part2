@@ -101,9 +101,16 @@ export async function DELETE(req, res) {
   const prisma = new PrismaClient();
   const reqBody = await req.json();
   try {
-    await prisma.user.delete({
-      where:{email: reqBody.email}
+    const deleteUser = await prisma.user.delete({
+      where:{id: reqBody.id}
     });
+    
+    const deleteOrder = await prisma.order.delete({
+      where:{userId: reqBody.id}
+    });
+    
+    await prisma.$transaction([deleteUser, deleteOrder])
+    
     return NextResponse.json({status: "Success", message: "Successfully User Deleted",statusCode: 200});
   } catch (error) { 
     return NextResponse.json({ status: "Error", message: "Failed to delete a new user", statusCode: 500});
