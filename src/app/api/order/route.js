@@ -4,7 +4,24 @@ import { PrismaClient } from "@prisma/client";
 export async function GET() {
   const prisma = new PrismaClient();
   try {
-    const orders = await prisma.order.findMany(); 
+    //Aggregate Query
+    const orderCount = await prisma.order.aggregate({ _count: { id: true } }); 
+    return NextResponse.json({ data: orderCount });
+    
+    const result = await prisma.order.aggregate({
+        _sum: {subTotal: true, itemDiscount: true, tax: true, total: true, discount: true, grandTotal: true},
+        _avg: {subTotal: true, itemDiscount: true, tax: true, total: true, discount: true, grandTotal: true},
+        _max: {subTotal: true, itemDiscount: true, tax: true, total: true, discount: true, grandTotal: true},
+    });
+    return NextResponse.json({ data: result });
+
+    const orders = await prisma.order.findMany({
+      groupBy: { id: "desc" },
+    });
+    return NextResponse.json({ data: orders });
+
+    //Find Many
+    /*const orders = await prisma.order.findMany(); 
     const orderData = orders.map((order) => ({
       id: Number(order.id), 
       userId: Number(order.userId), 
@@ -26,8 +43,7 @@ export async function GET() {
       createAt: order.createAt,
       updateAt: order.updateAt
     }));
-
-    return NextResponse.json({ data: orderData });
+    return NextResponse.json({ data: orderData });*/
   } catch (error) {
     console.error("Error fetching orders:", error);
     await prisma.$disconnect();
